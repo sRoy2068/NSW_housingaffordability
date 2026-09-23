@@ -128,8 +128,6 @@ Forecast values are translated into:
 
 # 🧩 Data Model
 
-## 🧩 Data Model
-
 The Power BI semantic model follows a **fact-constellation architecture built using dimensional-modelling principles**. Two conformed dimensions provide the shared context for historical analysis: `postcode_dim` for geography and `Date_Dim` for reporting quarters. Independent sales and rental fact tables retain their natural grain.
 
 | Table | Grain | Purpose |
@@ -156,8 +154,7 @@ The model is **modular**: the SA4-level forecasting layer was added through `for
 
 <img width="571" height="353" alt="image" src="https://github.com/user-attachments/assets/08defad9-4fe6-45f9-a24f-c8ddb563ee8c" />
 
-
-➡️ Detailed documentation: **`Data Model/`**
+➡️ **Detailed documentation:** [Data Model](./Data%20Model/) 
 
 
 ## 🔄 Data Transformation and Integration
@@ -188,8 +185,7 @@ Quarterly NSW sales and rental files were combined with 2021 Census data and ABS
 
 Checks covered reporting-period completeness, postcode matches and duplicates, coordinate ranges, numeric conversions, market-value distributions, and map-key consistency. Summary and detailed transaction counts were also compared with source files. For example, Sutherland’s **2023-Q4** postcode summary reported **963 sales**, while visible dwelling categories totalled **868**; the **95-sale difference** reflected suppressed categories. Published summary totals were therefore retained rather than reconstructed from visible detail alone.
 
-
-➡️ Detailed workflow: **`Data Preprocessing/`**
+➡️ **Detailed preprocessing workflow:** [Data Preprocessing](./Data%20Preprocessing/)
 
 ---
 
@@ -264,7 +260,7 @@ The analysis surfaced several recurring market patterns across Sydney:
 * affordability pressure forms clear geographic clusters rather than being evenly distributed;
 * forecast performance should be assessed using both error metrics and directional accuracy against actual outcomes.
 
-➡️ Detailed regional analysis: **Region Wise Findings/**
+➡️ **Detailed regional analysis:** [Region Wise Findings](./Region%20Wise%20Findings/)
 
 Detailed regional analysis was conducted for five Sydney SA4 regions:
 
