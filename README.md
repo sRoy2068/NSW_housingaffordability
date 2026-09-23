@@ -9,7 +9,9 @@ The project combines historical market analysis, postcode-level investigation an
 > **Where is housing pressure concentrated, what type of pressure is it, what is driving it, how reliable are the observed signals, and how could those pressures evolve under different market scenarios?**
 
 **Historical Period:** 2022-Q1 to 2025-Q3  
+
 **Forecast Horizon:** 2025-Q4 to 2026-Q3  
+
 **Geographic Scope:** Sydney Metro, using NSW housing and Census datasets
 ---
 
@@ -47,7 +49,6 @@ Key features include:
 **[SUMMARY DASHBOARD]**
 
 <img width="569" height="369" alt="image" src="https://github.com/user-attachments/assets/3e9c9412-035e-4967-8ad5-5795b59826ac" />
-
 
 ---
 
@@ -233,22 +234,13 @@ The percentiles reflect each region’s observed growth distribution, while the 
 
 ### Quarterly projection
 
-Each scenario is blended with recent growth, then bounded by the **10th and 90th percentiles** of that SA4’s historical quarterly growth:
+For each SA4 and metric (sales or rent), the scenario growth rate is blended with recent growth. The result is constrained to that region’s 10th–90th percentile range of historical quarterly growth:
 
-$$
-g_{\text{applied}} =
-\operatorname{median}\left(
-P_{10},\ P_{90},\
-0.8G_{\text{scenario}} + 0.2G_{\text{recent}}
-\right)
-$$
+Blended growth = (0.8 × Scenario growth) + (0.2 × Recent four-quarter average growth)
 
-$$
-\text{Forecast}_{t+1}
-=
-\text{Forecast}_{t}\left(1+g_{\text{applied}}\right)
-$$
+Applied growth = MEDIAN(10th percentile, 90th percentile, Blended growth)
 
+Next-quarter forecast = Current-quarter value × (1 + Applied growth)
 Here, \(G_{\text{recent}}\) is the recent four-quarter average growth rate. The forecast for each quarter becomes the starting value for the next, creating a **chained four-quarter projection**. The regional percentile bounds limit unusually large quarterly changes without applying the same fixed cap to every market.
 
 Projected sales prices and rents can then be compared with the fixed **2021 Census household-income baseline** to estimate future price-to-income ratios and rental burden. These are scenario estimates relative to 2021 income, rather than forecasts of household income.
@@ -288,6 +280,8 @@ The analysis moves from the regional position into postcode-level patterns and, 
 
 ## 🏙️ Parramatta
 
+<img width="605" height="234" alt="image" src="https://github.com/user-attachments/assets/9333a99c-5e1c-404c-876c-7fecc53248bf" />
+
 * **Regional headline:** By 2025-Q3, Parramatta recorded a median sales price of approximately **$1.15M**, median weekly rent of **$650**, a **11.8x Price-to-Income ratio**, **36.8% rent burden**, and around **2,682 sales**.
 
 * **Trend:** Rental affordability deteriorated substantially across the analysis period. Across the comparable postcode sample, median rent burden increased from roughly **27.7% in 2022-Q2 to 37.2% by 2025-Q3**, while rental growth remained materially ahead of sales-price growth.
@@ -303,6 +297,8 @@ The analysis moves from the regional position into postcode-level patterns and, 
 ---
 
 ## 🏘️ Blacktown
+
+<img width="602" height="233" alt="image" src="https://github.com/user-attachments/assets/2eb33658-c15a-4ac0-b6b7-c9dbcd07f3f4" />
 
 * **Regional headline:** By 2025-Q3, Blacktown recorded a median sales price of approximately **$1.25M**, median weekly rent of **$662.50**, a **10.5x Price-to-Income ratio**, **27.8% rent burden**, and around **1,361 sales**.
 
@@ -320,6 +316,8 @@ The analysis moves from the regional position into postcode-level patterns and, 
 
 ## 🌆 City & Inner South
 
+<img width="602" height="235" alt="image" src="https://github.com/user-attachments/assets/c8aafd88-d288-41da-abc2-c039fb57eeb6" />
+
 * **Regional headline:** By 2025-Q3, City & Inner South recorded a median sales price of approximately **$1.17M**, median weekly rent of **$840**, a **10.0x Price-to-Income ratio**, **37.3% rent burden**, and around **1,783 sales**.
 
 * **Trend:** The strongest finding was a clear **rent-sales divergence**. Rental growth substantially exceeded sales-price growth even across postcode areas where sales prices were stagnant, declining or increasing.
@@ -336,6 +334,8 @@ The analysis moves from the regional position into postcode-level patterns and, 
 
 ## 🏘️ Inner South West
 
+<img width="605" height="233" alt="image" src="https://github.com/user-attachments/assets/7aea1e15-dce3-44bf-b8da-b760b8247d59" />
+
 * **Regional headline:** By 2025-Q3, Inner South West recorded a median sales price of approximately **$1.21M**, median weekly rent of **$716.50**, a **12.6x Price-to-Income ratio**, **39.8% rent burden**, and around **2,085 sales**.
 
 * **Trend:** The region moved from relatively balanced rent and sales-price movements in 2022 to a clearly **rent-led affordability problem from 2023 onward**. By 2025-Q3, median rent growth across the comparable sample was approximately **+48.1%**, compared with around **+14.2% sales-price growth**.
@@ -351,6 +351,8 @@ The analysis moves from the regional position into postcode-level patterns and, 
 ---
 
 ## 🌉 North Sydney & Hornsby
+
+<img width="603" height="233" alt="image" src="https://github.com/user-attachments/assets/42e9cca9-40e5-405d-a360-2944c00f070b" />
 
 * **Regional headline:** By 2025-Q3, North Sydney & Hornsby recorded a median sales price of approximately **$1.82M**, median weekly rent of **$844**, a **12.9x Price-to-Income ratio**, and **30.9% rent burden**.
 
