@@ -4,14 +4,13 @@
 
 An end-to-end housing analytics project examining how **property prices, rents, household income, market activity and housing segments interact across Sydney**.
 
-The solution combines historical market analysis with postcode-level investigation and SA4-level scenario forecasting to answer:
+The project combines historical market analysis, postcode-level investigation and SA4-level scenario forecasting to answer:
 
-> **Where is housing pressure concentrated, what is driving it, how reliable are the observed signals, and how could those pressures evolve under different market scenarios?**
+> **Where is housing pressure concentrated, what type of pressure is it, what is driving it, how reliable are the observed signals, and how could those pressures evolve under different market scenarios?**
 
-**Historical Period:** 2022-Q1 to 2025-Q3
-**Forecast Horizon:** 2025-Q4 to 2026-Q3
-**Geography:** Sydney Metro / NSW
-
+**Historical Period:** 2022-Q1 to 2025-Q3  
+**Forecast Horizon:** 2025-Q4 to 2026-Q3  
+**Geographic Scope:** Sydney Metro, using NSW housing and Census datasets
 ---
 
 ## 🎯 Project Objectives
@@ -195,79 +194,68 @@ Checks covered reporting-period completeness, postcode matches and duplicates, c
 
 # 📐 Analytical Methodology
 
-The dashboard uses several complementary measures of housing-market pressure.
+The dashboard uses DAX measures to assess housing costs, market change and the reliability of observed trends.
 
-### Purchase Affordability
+| Analytical area | Method |
+| --- | --- |
+| **Purchase affordability** | Median sales price ÷ annual household income |
+| **Rental affordability** | Median weekly rent ÷ median weekly household income |
+| **Rent versus inflation** | Compares current rent with a CPI-adjusted 2021 Census rent baseline |
+| **Market growth** | Tracks quarter-on-quarter change and sales and rent indexes set to **100 in 2022-Q1** |
+| **Growth benchmarking** | Compares observed growth with an assumed quarterly growth rate compounded over elapsed quarters |
+| **Reliability and volatility** | Assesses sales volume, small samples, extreme prices, rental bond coverage and variation in historical year-on-year sales growth |
 
-**Median Sales Price ÷ Annual Household Income**
+Purchase and rental affordability use **2021 Census household income as a fixed baseline**. Changes in these ratios therefore reflect changes in housing costs relative to 2021 income, rather than measured quarterly changes in household income. The expected-growth measures are analytical benchmarks, not forecasts.
 
-Used to distinguish high nominal prices from high **income-adjusted purchase pressure**.
+For deeper rental analysis, users can switch between **dwelling type and bedroom count** to compare median rent, rental burden and reported new bonds. Segment measures also show how each category’s burden has changed since 2022-Q1 and how it differs from the overall market. Field parameters, dynamic titles and tooltips adapt these views to the selected context.
 
-### Rental Affordability
+The forecasting measures translate scenario sales prices and weekly rents into **projected price-to-income ratios and rental burden**, then classify regional affordability pressure. The [forecasting methodology](./DAX%20%26%20Forecasting%20Methodology/) explains how the projected values are generated.
 
-**Median Weekly Rent ÷ Median Weekly Household Income**
-
-Used to evaluate rental burden relative to household financial capacity.
-
-### Rent vs Inflation
-
-Current rents are compared with an **inflation-adjusted baseline** to identify rental increases that exceed general price growth.
-
-### Growth & Benchmarking
-
-The model includes:
-
-* QoQ growth;
-* growth since 2022-Q1;
-* indexed sales and rental trends;
-* time-adjusted expected-growth benchmarks.
-
-### Reliability & Volatility
-
-Observed market growth is evaluated alongside:
-
-* transaction activity;
-* small-sample behaviour;
-* extreme-price observations;
-* reported-quarter coverage;
-* historical YoY price volatility.
-
-This prevents large percentage movements from automatically being interpreted as strong market signals.
-
-➡️ Selected DAX documentation: **`DAX & Forecasting Methodology/`**
+➡️ [Detailed DAX documentation](./DAX%20%26%20Forecasting%20Methodology/)
 
 ---
 
 # 📈 Forecasting Methodology
 
-The project uses a **scenario-based forecasting framework rather than a single deterministic prediction**.
+The project uses a **scenario-based framework** to project sales prices and weekly rents across 12 Sydney SA4 regions. Starting from 2025-Q3 actual values, it produces Low, Base and High scenarios for four quarters, from **2025-Q4 to 2026-Q3**. Sales and rent are forecast separately.
 
-### Low Scenario
+### Scenario growth assumptions
 
-Represents weaker growth based on the lower portion (25th percentile) of historical quarterly growth behaviour.
+For each SA4 and metric, quarterly growth assumptions are derived from historical quarter-on-quarter growth:
 
-### Base Scenario
+| Scenario | Quarterly growth assumption |
+| --- | --- |
+| **Low** | 10th percentile of historical growth |
+| **Base** | 68% × recent four-quarter average growth + 32% × full-period median growth |
+| **High** | 90th percentile of historical growth |
 
-Combines:
+The percentiles reflect each region’s observed growth distribution, while the Base scenario balances recent movement with the longer historical pattern.
 
-* **68% recent four-quarter average growth**
-* **32% full-period median growth**
+### Quarterly projection
 
-to balance recent momentum with longer-term market behaviour.
+Each scenario is blended with recent growth, then bounded by the **10th and 90th percentiles** of that SA4’s historical quarterly growth:
 
-### High Scenario
+$$
+g_{\text{applied}} =
+\operatorname{median}\left(
+P_{10},\ P_{90},\
+0.8G_{\text{scenario}} + 0.2G_{\text{recent}}
+\right)
+$$
 
-Represents stronger growth based on the upper portion (75th percentile) of the historical quarterly growth distribution.
+$$
+\text{Forecast}_{t+1}
+=
+\text{Forecast}_{t}\left(1+g_{\text{applied}}\right)
+$$
 
-Forecasts are generated independently for **sales and rent** and subsequently translated into projected affordability measures.
+Here, \(G_{\text{recent}}\) is the recent four-quarter average growth rate. The forecast for each quarter becomes the starting value for the next, creating a **chained four-quarter projection**. The regional percentile bounds limit unusually large quarterly changes without applying the same fixed cap to every market.
 
-The forecast should therefore be interpreted as:
+Projected sales prices and rents can then be compared with the fixed **2021 Census household-income baseline** to estimate future price-to-income ratios and rental burden. These are scenario estimates relative to 2021 income, rather than forecasts of household income.
 
-> **A range of plausible market outcomes rather than an exact prediction of future property values.**
+> The Low, Base and High paths show a historically grounded range of possible outcomes. They are not exact predictions or probabilities of future prices and rents.
 
----
-
----
+For the full scenario calculations, projection formula and regional growth bounds, see the [detailed forecasting methodology](./DAX%20%26%20Forecasting%20Methodology/).
 
 # 🔎 Key Analytical Findings
 
