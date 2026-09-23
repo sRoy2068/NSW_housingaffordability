@@ -1,7 +1,3 @@
-You’re not far from done. At this point, **do not turn the README into another 20-page technical document**. You already have separate folders for the data model, DAX, preprocessing, forecasting and regional findings. The README should be the **recruiter-facing landing page** that points to those deeper documents.
-
-I’d finish it today with this structure:
-
 # NSW Housing Affordability & Rental Stress Analytics
 
 **Power BI | Python | DAX | Power Query | Excel | Statistical Scenario Modelling**
@@ -50,6 +46,7 @@ Key features include:
 * purchase/rental pressure classification.
 
 **[SUMMARY DASHBOARD]**
+
 <img width="569" height="369" alt="image" src="https://github.com/user-attachments/assets/3e9c9412-035e-4967-8ad5-5795b59826ac" />
 
 
@@ -66,6 +63,7 @@ Investigates affordability within a selected SA4 using:
 * rental and purchase pressure hotspots.
 
 **[POSTAL LEVEL AFFORDABILITY DASHBOARD]**
+
 <img width="574" height="374" alt="image" src="https://github.com/user-attachments/assets/d8416082-2bba-411b-857c-8de1fbddd69e" />
 
 
@@ -84,6 +82,7 @@ The page helps identify which local areas are driving broader regional trends wh
 * reliability of observed signals.
 
 **[POSTAL-LEVEL DRILLDOWN]**
+
 <img width="602" height="372" alt="image" src="https://github.com/user-attachments/assets/2a50e285-6fc9-44db-87fb-c6ae6301a0e9" />
 
 
@@ -103,6 +102,7 @@ Analyses rental affordability by:
 Field parameters allow users to dynamically switch between segment perspectives.
 
 **[SEGMENT DASHBOARD]**
+
 <img width="608" height="374" alt="image" src="https://github.com/user-attachments/assets/422ca1fc-41be-42a7-b36c-7806478ba6a6" />
 
 
@@ -121,60 +121,73 @@ Forecast values are translated into:
 * dual-pressure regions.
 
 **[REGIONAL FORECAST DASHBOARD]**
+
 <img width="657" height="376" alt="image" src="https://github.com/user-attachments/assets/0dd48d3a-8a05-4f78-adcc-b60e91a5fde4" />
 
 ---
 
 # 🧩 Data Model
 
-The Power BI semantic model follows a **fact-constellation architecture built using dimensional-modelling principles**.
+## 🧩 Data Model
 
-Two conformed dimensions sit at the centre of the historical model:
+The Power BI semantic model follows a **fact-constellation architecture built using dimensional-modelling principles**. Two conformed dimensions provide the shared context for historical analysis: `postcode_dim` for geography and `Date_Dim` for reporting quarters. Independent sales and rental fact tables retain their natural grain.
 
-* `postcode_dim` — shared geographic context;
-* `Date_Dim` — shared historical time context.
+| Table | Grain | Purpose |
+| --- | --- | --- |
+| `postcode_dim` | Postcode | Shared postcode, suburb, LGA and SA4 geography |
+| `Date_Dim` | Historical quarter | Shared time filtering for sales and rental facts |
+| `sales_fact` | Postcode × quarter | Sales prices and transaction activity |
+| `sales_fact_dwelling` | Postcode × quarter × dwelling type | Sales analysis by dwelling category |
+| `rent_fact_summary` | Postcode × quarter | Weekly rents and bond activity |
+| `rent_dwelling` | Postcode × quarter × dwelling type | Rental analysis by dwelling category |
+| `rent_bedroom` | Postcode × quarter × bedroom count | Rental analysis by bedroom category |
+| `rent_detail` | Postcode × quarter × dwelling type × bedroom count | Detailed rental segment analysis |
+| `income_expenditure_dim` | Postcode | 2021 Census income and household context for affordability measures |
+| `forecast_sa4_dim` | SA4 | Regional dimension linking forecasts with historical geography |
+| `forecast_summary` | SA4 × future quarter × metric × scenario | Low, Base and High sales and rent projections |
 
-Independent sales and rental fact tables retain their **natural grain** rather than being flattened into one table.
+Each historical fact table connects independently to the shared dimensions. Preserving these grains avoids duplicated values and unnecessary fact-to-fact relationships while allowing sales, rental and segment measures to be compared under consistent filters.
 
-Examples include:
+The model is **modular**: the SA4-level forecasting layer was added through `forecast_sa4_dim` and `forecast_summary` without restructuring the historical postcode-level tables or their business logic. Forecast periods remain separate from the historical `Date_Dim`.
 
-* postcode × quarter;
-* postcode × quarter × dwelling type;
-* postcode × quarter × bedroom count;
-* postcode × quarter × dwelling type × bedroom count.
+**Affordability interpretation:** `income_expenditure_dim` uses a fixed 2021 Census income baseline. Price-to-income ratios and rental burden therefore compare changing housing costs with 2021 income, rather than income measured in each quarter.
 
-This reduces duplication, avoids unnecessary fact-to-fact relationships and allows each analytical component to evolve independently.
+**[DATA MODEL]**
 
-### Modularity
+<img width="571" height="353" alt="image" src="https://github.com/user-attachments/assets/08defad9-4fe6-45f9-a24f-c8ddb563ee8c" />
 
-The model was deliberately designed to be modular.
-
-For example, the **SA4-level forecasting layer was added later through `forecast_sa4_dim` and `forecast_summary` without restructuring the historical postcode-level sales or rental model**.
-
-This allows new analytical subject areas to be introduced while preserving existing fact-table grain and business logic.
-
-**[INSERT DATA MODEL SCREENSHOT]**
 
 ➡️ Detailed documentation: **`Data Model/`**
 
----
 
-# 🧹 Data Preparation & Quality
+## 🔄 Data Transformation and Integration
 
-Data from multiple sources was cleaned, standardised and validated before being introduced into the semantic model.
+Quarterly NSW sales and rental files were combined with 2021 Census data and ABS geography to support analysis from **2022-Q1 to 2025-Q3**. The workflow standardised reporting periods and data types, preserved each dataset’s level of detail, and produced geographic boundaries for Power BI Shape Maps.
 
-Important preparation decisions included:
+### Dataset source files
 
-* resolving missing and inconsistent geographic classifications;
-* standardising postcode and SA4 mappings;
-* handling suppressed observations;
-* ensuring suppressed activity was **not interpreted as zero**;
-* retaining small-sample indicators;
-* flagging extreme sales-price observations;
-* validating reporting periods and table grain;
-* cleaning invalid rental observations.
+| Dataset | Provider | Primary use | Source |
+| --- | --- | --- | --- |
+| Quarterly NSW sales tables | NSW Communities and Justice | Property prices and transaction activity | [Current Rent & Sales Reports](https://dcj.nsw.gov.au/about-us/families-and-communities-statistics/housing-rent-and-sales/rent-and-sales-report.html) |
+| Historical NSW sales tables | NSW Communities and Justice | Historical quarterly sales data | [Previous Rent & Sales Reports](https://dcj.nsw.gov.au/about-us/families-and-communities-statistics/housing-rent-and-sales/previous-rent-and-sales-reports.html) |
+| Quarterly NSW rental tables | NSW Communities and Justice | Weekly rents, new bonds and total bond activity | [Current Rent & Sales Reports](https://dcj.nsw.gov.au/about-us/families-and-communities-statistics/housing-rent-and-sales/rent-and-sales-report.html) |
+| Historical NSW rental tables | NSW Communities and Justice | Historical quarterly rental data | [Previous Rent & Sales Reports](https://dcj.nsw.gov.au/about-us/families-and-communities-statistics/housing-rent-and-sales/previous-rent-and-sales-reports.html) |
+| 2021 Census DataPacks | Australian Bureau of Statistics | Household income, mortgage, rent and demographic context | [ABS Census DataPacks](https://www.abs.gov.au/census/find-census-data/datapacks) |
+| 2021 SA4 boundaries | Australian Bureau of Statistics | Regional Shape Map boundaries | [ABS Digital Boundary Files](https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs/edition-3-july-2021-june-2026/access-and-downloads/digital-boundary-files) |
+| 2021 Postal Area boundaries | Australian Bureau of Statistics | Postcode-level Shape Map boundaries | [ABS Digital Boundary Files](https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs/edition-3-july-2021-june-2026/access-and-downloads/digital-boundary-files) |
 
-Data-quality checks were retained within the analytical layer so that unreliable observations could be identified rather than silently treated as equally credible.
+### Transformation workflow
+
+1. **Combine quarterly files:** Reusable import logic appended sales and rental workbooks into master datasets. The year, quarter and `YYYY-Qn` period were derived from each source filename.
+2. **Clean and standardise:** Suppressed (`s`) and unavailable (`-`) values became null, rather than zero. Numeric formatting was removed before type conversion; invalid essential price observations were excluded, and relevant small-sample flags were retained.
+3. **Preserve analytical grain:** Sales and rental records were split into postcode-period summary tables and separate dwelling, bedroom and detailed segment tables. This prevents summary values from being repeated or double counted across segment rows.
+4. **Integrate geography and Census data:** Postcodes were matched to LGA and SA4 attributes, coordinates and broader reporting groups in `postcode_dim`. The 2021 Census data was aligned by postcode in `income_expenditure_dim` to provide income, housing-cost and household context.
+5. **Prepare map boundaries:** ABS SA4 and Postal Area shapefiles were filtered, simplified and converted to TopoJSON. The resulting SA4 and postcode identifiers were matched to Power BI model keys for Shape Maps.
+
+### Validation
+
+Checks covered reporting-period completeness, postcode matches and duplicates, coordinate ranges, numeric conversions, market-value distributions, and map-key consistency. Summary and detailed transaction counts were also compared with source files. For example, Sutherland’s **2023-Q4** postcode summary reported **963 sales**, while visible dwelling categories totalled **868**; the **95-sale difference** reflected suppressed categories. Published summary totals were therefore retained rather than reconstructed from visible detail alone.
+
 
 ➡️ Detailed workflow: **`Data Preprocessing/`**
 
